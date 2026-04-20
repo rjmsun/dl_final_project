@@ -1,0 +1,121 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\begin{document}
+
+\title{Denoising Autoencoders for 1D Time-Series Signals\\
+\large ECE 685D Final Project}
+
+\author{\IEEEauthorblockN{Robert Jieming Sun}
+\IEEEauthorblockA{\textit{Duke University}\\
+Durham, NC \\
+email@duke.edu}
+\and
+\IEEEauthorblockN{Partner Name (If Applicable)}
+\IEEEauthorblockA{\textit{Duke University}\\
+Durham, NC \\
+email@duke.edu}
+}
+
+\maketitle
+
+\begin{abstract}
+This report investigates the design and performance of denoising autoencoders for 1D time-series signals. We generated a synthetic dataset and evaluated four neural architectures—Fully Connected (MLP), 1D Convolutional (CNN), Long Short-Term Memory (LSTM), and a Transformer-based encoder-decoder. Models were trained to reconstruct clean signals from inputs corrupted by Gaussian noise, random masking, impulse noise, and sinusoidal interference. We evaluate reconstruction quality using Mean Squared Error (MSE) and Signal-to-Noise Ratio (SNR) improvement, alongside an analysis of out-of-distribution noise generalization.
+\end{abstract}
+
+\section{Introduction}
+Denoising is a fundamental challenge in signal processing, where the goal is to recover a clean signal $x \in \mathbb{R}^L$ from a corrupted observation $x_{\text{noisy}}$. In this project, we utilize the framework of Denoising Autoencoders (DAEs). A DAE consists of an encoder $z = \text{Enc}(x_{\text{noisy}})$ that maps the input to a low-dimensional latent space $z \in \mathbb{R}^d$, and a decoder $\hat{x} = \text{Dec}(z)$ that reconstructs the signal. The network parameters $\theta$ are learned by minimizing the Mean Squared Error (MSE) reconstruction loss:
+\begin{equation}
+\mathcal{L}(\theta) = \mathbb{E} \left[ \|x - f_\theta(x_{\text{noisy}})\|_2^2 \right]
+\end{equation}
+We explore four distinct architectures to determine which best captures the temporal dependencies required for effective denoising.
+
+\section{Dataset and Noise Models}
+\subsection{Synthetic Signal Generation}
+Our dataset consists of synthetic 1D signals generated via \texttt{dataset.py}. Each signal is a mixture of multiple sine wave components with randomized amplitudes (0.3--1.0), frequencies (1.0--12.0), and phases. To increase dataset diversity, a "chirp" component (frequency sweep) is added with a 35\% probability. All signals have a sequence length of 256 and are peak-normalized to $[-1, 1]$. We utilized a split of 2048 training samples, 512 validation samples, and 512 test samples.
+
+\subsection{Noise Corruption}
+We implemented four noise models to simulate common real-world distortions:
+\begin{itemize}
+    \item \textbf{Gaussian Noise:} Additive white noise $\epsilon \sim \mathcal{N}(0,\sigma^{2})$ with $\sigma=0.15$.
+    \item \textbf{Random Masking:} Contiguous segments of lengths 4--16 are zeroed out until 15\% of the signal is removed.
+    \item \textbf{Impulse Noise:} Salt-and-pepper style spikes added at 5\% of timesteps with an amplitude of $\pm 3.0$.
+    \item \textbf{Sinusoidal Interference:} A 5Hz periodic tone added to simulate background hum.
+\end{itemize}
+
+\section{Model Architectures}
+\subsection{Multilayer Perceptron (MLP)}
+The MLP baseline treats the 256-sample sequence as a flat vector. It consists of three fully connected layers in the encoder (256 $\to$ 128 $\to$ 64 $\to$ $z$) and a symmetric decoder. 
+
+\subsection{1D Convolutional Autoencoder (CNN)}
+The CNN architecture uses temporal convolutions to capture local patterns. The encoder features two strided convolutional layers (stride 2, kernel 4) to downsample the signal while increasing channel depth, followed by a linear projection to the bottleneck.
+
+\subsection{LSTM Autoencoder}
+The recurrent model uses a Bidirectional LSTM encoder to capture context from both directions. Each timestep is projected to the latent dimension $z$. The decoder is a unidirectional LSTM followed by a linear head to reconstruct the 1D samples.
+
+\subsection{Transformer Autoencoder}
+The Transformer model uses multi-head self-attention (4 heads) and sinusoidal positional encodings. This allows the model to capture global dependencies without the vanishing gradient issues of RNNs. We utilized 2 layers in both the encoder and decoder.
+
+\section{Experiments and Analysis}
+\subsection{Experimental Setup}
+Models were trained for 20 epochs using the Adam optimizer with a learning rate of $10^{-3}$ and a batch size of 64. We swept bottleneck dimensions $z \in \{16, 32, 64\}$ to evaluate the rate-distortion trade-off.
+
+\subsection{Comparing Model Architectures}
+Figure \ref{fig:arch_comparison} illustrates the performance across architectures. LSTMs and Transformers generally outperformed the MLP on masking tasks due to their ability to leverage long-range temporal context to "fill in" the missing gaps.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig_arch_comparison.png}}
+\caption{Comparison of test MSE across architectures and noise modes.}
+\label{fig:arch_comparison}
+\end{figure}
+
+\subsection{Effect of the Latent Dimension}
+As seen in Figure \ref{fig:bottleneck}, increasing the bottleneck dimension $z$ consistently reduced MSE. However, the CNN and Transformer models showed higher resilience to smaller bottleneck sizes, suggesting more efficient latent representations.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig_bottleneck.png}}
+\caption{Effect of bottleneck size on reconstruction error.}
+\label{fig:bottleneck}
+\end{figure}
+
+\subsection{Robustness to Noise Types}
+The Signal-to-Noise Ratio (SNR) improvement was used as the primary metric for robustness.
+\begin{equation}
+\text{SNR}(x, \hat{x}) = 10 \log_{10} \left( \frac{\|x\|_2^2}{\|x - \hat{x}\|_2^2} \right)
+\end{equation}
+Figure \ref{fig:snr_comparison} shows that CNNs were particularly effective against Gaussian noise, while the recurrent architectures handled impulse noise more gracefully.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig_snr_comparison.png}}
+\caption{SNR improvement across different noise environments.}
+\label{fig:snr_comparison}
+\end{figure}
+
+\subsection{Generalization Across Noise Levels}
+In our generalization sweep (Fig. \ref{fig:generalization}), we evaluated models on Gaussian noise intensities from $\sigma=0.05$ to $0.40$. Most models maintained high SNR improvement at lower noise levels but degraded significantly beyond $\sigma=0.25$.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig_generalization.png}}
+\caption{Generalization performance vs. Gaussian noise intensity.}
+\label{fig:generalization}
+\end{figure}
+
+\section{Qualitative Results}
+Figure \ref{fig:reconstruction} shows a representative example of the CNN autoencoder denoising a signal corrupted by both Gaussian and masking noise. The model successfully recovers the underlying sinusoidal structure.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{reconstructions.png}}
+\caption{Visualization: (Top) Clean signal, (Middle) Corrupted input, (Bottom) Reconstructed output.}
+\label{fig:reconstruction}
+\end{figure}
+
+\section{Conclusion}
+We have demonstrated that deep autoencoders are highly effective at 1D signal denoising. Transformers and LSTMs provide the most robust performance for temporal gaps (masking), while CNNs offer a computationally efficient alternative for stationary noise. Future work could explore Variational Autoencoders (VAEs) to learn smoother latent manifolds.
+
+\end{document}
