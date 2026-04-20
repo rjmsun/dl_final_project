@@ -12,6 +12,10 @@ from config import (
     DEFAULT_BOTTLENECK_DIM,
     DEFAULT_GAUSSIAN_STD,
     DEFAULT_HIDDEN_DIM,
+    DEFAULT_IMPULSE_AMPLITUDE,
+    DEFAULT_IMPULSE_RATE,
+    DEFAULT_INTERFERENCE_AMPLITUDE,
+    DEFAULT_INTERFERENCE_FREQ,
     DEFAULT_MASK_MAX_LENGTH,
     DEFAULT_MASK_MIN_LENGTH,
     DEFAULT_MASK_RATIO,
@@ -93,11 +97,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--num-samples", type=int, default=DEFAULT_TEST_SAMPLES)
     parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE)
     parser.add_argument("--sequence-length", type=int, default=None)
-    parser.add_argument("--noise-mode", choices=["gaussian", "masking", "both"], default="both")
+    parser.add_argument("--noise-mode", choices=["gaussian", "masking", "both", "impulse", "sinusoidal", "all"], default="both")
     parser.add_argument("--gaussian-std", type=float, default=DEFAULT_GAUSSIAN_STD)
     parser.add_argument("--mask-ratio", type=float, default=DEFAULT_MASK_RATIO)
     parser.add_argument("--mask-min-length", type=int, default=DEFAULT_MASK_MIN_LENGTH)
     parser.add_argument("--mask-max-length", type=int, default=DEFAULT_MASK_MAX_LENGTH)
+    parser.add_argument("--impulse-rate", type=float, default=DEFAULT_IMPULSE_RATE)
+    parser.add_argument("--impulse-amplitude", type=float, default=DEFAULT_IMPULSE_AMPLITUDE)
+    parser.add_argument("--interference-freq", type=float, default=DEFAULT_INTERFERENCE_FREQ)
+    parser.add_argument("--interference-amplitude", type=float, default=DEFAULT_INTERFERENCE_AMPLITUDE)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
     return parser
@@ -117,6 +125,10 @@ def main() -> None:
         mask_ratio=args.mask_ratio,
         mask_min_length=args.mask_min_length,
         mask_max_length=args.mask_max_length,
+        impulse_rate=args.impulse_rate,
+        impulse_amplitude=args.impulse_amplitude,
+        interference_freq=args.interference_freq,
+        interference_amplitude=args.interference_amplitude,
     )
     dataset = SyntheticDenoisingDataset(
         num_samples=args.num_samples,

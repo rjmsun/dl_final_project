@@ -1,6 +1,7 @@
 from .cnn_ae import CNNAutoencoder
 from .lstm_ae import LSTMAutoencoder
 from .mlp_ae import MLPAutoencoder
+from .transformer_ae import TransformerAutoencoder
 
 
 def build_model(
@@ -29,7 +30,14 @@ def build_model(
             hidden_dim=hidden_dim,
             num_layers=num_layers,
         )
-    raise ValueError(f"Unsupported model '{model_name}'. Choose from: mlp, cnn, lstm.")
+    if model_name == "transformer":
+        return TransformerAutoencoder(
+            sequence_length=sequence_length,
+            bottleneck_dim=bottleneck_dim,
+            hidden_dim=hidden_dim,
+            num_layers=num_layers,
+        )
+    raise ValueError(f"Unsupported model '{model_name}'. Choose from: mlp, cnn, lstm, transformer.")
 
 
-__all__ = ["MLPAutoencoder", "CNNAutoencoder", "LSTMAutoencoder", "build_model"]
+__all__ = ["MLPAutoencoder", "CNNAutoencoder", "LSTMAutoencoder", "TransformerAutoencoder", "build_model"]

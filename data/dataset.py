@@ -7,17 +7,25 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-NoiseMode = Literal["gaussian", "masking", "both"]
+NoiseMode = Literal["gaussian", "masking", "both", "impulse", "sinusoidal", "all"]
 
 
 @dataclass
 class NoiseConfig:
     noise_mode: NoiseMode = "both"
+    # Gaussian noise
     gaussian_std: float = 0.15
+    # Random masking
     mask_ratio: float = 0.15
     mask_min_length: int = 4
     mask_max_length: int = 16
     mask_value: float = 0.0
+    # Impulse noise
+    impulse_rate: float = 0.05        # fraction of timesteps that get a spike
+    impulse_amplitude: float = 3.0   # spike magnitude (relative to normalised signal)
+    # Sinusoidal interference
+    interference_freq: float = 5.0   # interference frequency in cycles per unit time
+    interference_amplitude: float = 0.4
 
 
 def generate_sine_signal(
@@ -86,27 +94,75 @@ def add_random_masking(
     return masked_signal
 
 
+def add_impulse_noise(
+    signal: np.ndarray,
+    impulse_rate: float,
+    amplitude: float,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    """Randomly inject large-amplitude spikes (impulse / salt-and-pepper noise)."""
+    corrupted = signal.copy()
+    n = signal.shape[0]
+    num_spikes = max(1, int(impulse_rate * n))
+    positions = rng.integers(0, n, size=num_spikes)
+    # Each spike is +amplitude or -amplitude with equal probability
+    signs = rng.choice([-1.0, 1.0], size=num_spikes).astype(np.float32)
+    corrupted[positions] += signs * amplitude
+    return corrupted
+
+
+def add_sinusoidal_interference(
+    signal: np.ndarray,
+    frequency: float,
+    amplitude: float,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    """Add a single-frequency sinusoidal tone to simulate background interference."""
+    n = signal.shape[0]
+    t = np.linspace(0.0, 1.0, n, dtype=np.float32)
+    phase = float(rng.uniform(0.0, 2.0 * np.pi))
+    interference = amplitude * np.sin(2.0 * np.pi * frequency * t + phase).astype(np.float32)
+    return signal + interference
+
+
 def corrupt_signal(
     clean_signal: np.ndarray,
     noise_config: NoiseConfig,
     rng: np.random.Generator,
 ) -> np.ndarray:
     noisy_signal = clean_signal.copy()
+    mode = noise_config.noise_mode
 
-    if noise_config.noise_mode in {"gaussian", "both"}:
+    if mode in {"gaussian", "both", "all"}:
         noisy_signal = add_gaussian_noise(
             noisy_signal,
             std=noise_config.gaussian_std,
             rng=rng,
         )
 
-    if noise_config.noise_mode in {"masking", "both"}:
+    if mode in {"masking", "both", "all"}:
         noisy_signal = add_random_masking(
             noisy_signal,
             mask_ratio=noise_config.mask_ratio,
             mask_min_length=noise_config.mask_min_length,
             mask_max_length=noise_config.mask_max_length,
             mask_value=noise_config.mask_value,
+            rng=rng,
+        )
+
+    if mode in {"impulse", "all"}:
+        noisy_signal = add_impulse_noise(
+            noisy_signal,
+            impulse_rate=noise_config.impulse_rate,
+            amplitude=noise_config.impulse_amplitude,
+            rng=rng,
+        )
+
+    if mode in {"sinusoidal", "all"}:
+        noisy_signal = add_sinusoidal_interference(
+            noisy_signal,
+            frequency=noise_config.interference_freq,
+            amplitude=noise_config.interference_amplitude,
             rng=rng,
         )
 
