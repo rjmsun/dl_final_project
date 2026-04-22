@@ -1,0 +1,34 @@
+[
+  {
+    "run_name": "mlp_z16_gaussian",
+    "model": "mlp",
+    "bottleneck_dim": 16,
+    "noise_mode": "gaussian",
+    "epochs": 1,
+    "train_samples": 32,
+    "val_samples": 16,
+    "test_samples": 16,
+    "checkpoint_path": "experiments_smoke/checkpoints/mlp_z16_gaussian_best.pt",
+    "best_val_mse": 0.20330025255680084,
+    "test_mse": 0.21280687302350998,
+    "test_noisy_snr_db": 9.920013904571533,
+    "test_recon_snr_db": -0.006160578690469265,
+    "test_snr_improvement_db": -9.926174483262002
+  },
+  {
+    "run_name": "cnn_z16_gaussian",
+    "model": "cnn",
+    "bottleneck_dim": 16,
+    "noise_mode": "gaussian",
+    "epochs": 1,
+    "train_samples": 32,
+    "val_samples": 16,
+    "test_samples": 16,
+    "checkpoint_path": "experiments_smoke/checkpoints/cnn_z16_gaussian_best.pt",
+    "best_val_mse": 0.21517407894134521,
+    "test_mse": 0.2065030336380005,
+    "test_noisy_snr_db": 9.399496078491211,
+    "test_recon_snr_db": -0.010537611320614815,
+    "test_snr_improvement_db": -9.410033689811826
+  }
+]

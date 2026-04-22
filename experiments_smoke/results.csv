@@ -1,0 +1,3 @@
+run_name,model,bottleneck_dim,noise_mode,epochs,train_samples,val_samples,test_samples,checkpoint_path,best_val_mse,test_mse,test_noisy_snr_db,test_recon_snr_db,test_snr_improvement_db
+mlp_z16_gaussian,mlp,16,gaussian,1,32,16,16,experiments_smoke/checkpoints/mlp_z16_gaussian_best.pt,0.20330025255680084,0.21280687302350998,9.920013904571533,-0.006160578690469265,-9.926174483262002
+cnn_z16_gaussian,cnn,16,gaussian,1,32,16,16,experiments_smoke/checkpoints/cnn_z16_gaussian_best.pt,0.21517407894134521,0.2065030336380005,9.399496078491211,-0.010537611320614815,-9.410033689811826
