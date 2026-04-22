@@ -1,3 +1,11 @@
 .venv/
 __pycache__/
 *.pyc
+
+artifacts/
+checkpoints/
+experiments/
+experiments_fixed/
+experiments_smoke/
+smoke_checkpoints/
+smoke_checkpoints_fix/
