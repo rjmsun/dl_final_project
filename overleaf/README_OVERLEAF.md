@@ -10,13 +10,13 @@ To complete your final report, follow these steps:
    - Copy the contents of `overleaf/main.tex` and paste it into the `main.tex` file in your Overleaf project.
 
 3. **Upload the Figures:**
-   - You need to upload the generated plots from your `artifacts/` folder to the Overleaf project so they can be rendered.
+   - You need to upload the generated plots into the Overleaf project root so they can be rendered directly by `main.tex`.
    - **Upload these files:**
-     - `artifacts/fig_arch_comparison.png`
-     - `artifacts/fig_bottleneck.png`
-     - `artifacts/fig_generalization.png`
-     - `artifacts/fig_snr_comparison.png`
-     - `artifacts/reconstructions.png` (You can add this to show example denoisings!)
+     - `fig_arch_comparison.png`
+     - `fig_bottleneck.png`
+     - `fig_generalization.png`
+     - `fig_snr_comparison.png`
+     - `reconstructions.png` (You can add this to show example denoisings!)
 
 4. **Add Reconstruction Examples:**
    - I have included placeholders for the main comparison charts. You should also add a section for "Qualitative Results" using `reconstructions.png` to show side-by-side examples of clean vs. noisy vs. reconstructed signals.
