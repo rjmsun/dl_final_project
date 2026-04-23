@@ -1,3 +1,8 @@
+"""
+Train a denoising autoencoder on synthetic 1D signals.
+I used AI here to help understand which parts were needed to be contained here.
+"""
+
 from __future__ import annotations
 
 import argparse

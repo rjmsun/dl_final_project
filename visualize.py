@@ -1,3 +1,8 @@
+"""
+Plot training history and reconstructions from a checkpoint.
+Used for visualizing results.
+I used AI here to help with syntax and also understand the format of this file.
+"""
 from __future__ import annotations
 
 import argparse

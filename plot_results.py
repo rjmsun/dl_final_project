@@ -168,7 +168,7 @@ def plot_snr_comparison(df: pd.DataFrame, output_dir: Path) -> None:
             width=width * 0.92,
             label=model.upper(),
             color=PALETTE.get(model, "#888888"),
-            hatch=NOISE_HATCHES.get(noise_modes[0] if noise_modes else "", ""),
+
             edgecolor="white",
             linewidth=0.6,
         )

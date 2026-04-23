@@ -1,3 +1,10 @@
+"""
+Transformer-based denoising autoencoder.
+Used for the transformer model in the experiments.
+I used AI here to help understand the syntax and basic structure of this file.
+Also since we didn't really cover Transformers in class, I used AI to help understand the structure of a transformer. and how to code it up.
+"""
+
 from __future__ import annotations
 
 import math

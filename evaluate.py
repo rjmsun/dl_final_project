@@ -1,3 +1,8 @@
+"""
+Evaluate a trained denoising autoencoder on synthetic 1D signals.
+Calculates metrics like MSE and SNR improvement.
+I used AI here to help with syntax and also understand the format of this file.
+"""
 from __future__ import annotations
 
 import argparse
